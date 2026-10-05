@@ -22,7 +22,6 @@ Recinto:
   admissible_vars:
     - zonas
     - servicios
-    - direccion_loc
   unique_indexes:
     - nombre
   regular_indexes:
@@ -38,7 +37,7 @@ Artista:
     - anio_inicio
   unique_indexes:
     - nombre
-  regular_indexes: 
+  regular_indexes:
     - pais_origen
 
 Evento:
@@ -51,7 +50,7 @@ Evento:
     - precios_zona
     - entradas_vendidas
   unique_indexes: []
-  regular_indexes: 
+  regular_indexes:
     - fechas
 
 Asistente:
