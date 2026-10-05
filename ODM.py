@@ -35,10 +35,7 @@ def getLocationPoint(address: str) -> Point:
         intentos += 1
         try:
             time.sleep(1)
-            #TODO
-            # Es necesario proporcionar un user_agent para utilizar la API
-            # Utilizar un nombre aleatorio para el user_agent
-            location = Nominatim(user_agent="Mi-Nombre-Aleatorio").geocode(address)
+            location = Nominatim(user_agent="envivo-abd-p1-rodrigo-kerman").geocode(address)
         except GeocoderTimedOut:
             # Puede lanzar una excepcion si se supera el tiempo de espera
             # Volver a intentarlo
@@ -48,6 +45,9 @@ def getLocationPoint(address: str) -> Point:
     # Si no se consiguieron coordenadas, lanzar ValueError: la funcion no puede
     # devolver un punto inventado ni None silenciosamente. Es lo que espera la
     # prueba test_get_location_point_timeout_failure.
+    if location is None:
+        raise ValueError(f"No se pudieron obtener coordenadas para: {address}")
+    return Point((location.longitude, location.latitude))
 
 class Model:
     """ 
