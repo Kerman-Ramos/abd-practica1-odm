@@ -153,7 +153,14 @@ class Model:
         actualiza el documento existente con los nuevos valores del
         modelo.
         """
-        #TODO
+        if self._id is None:
+            result = pymongo.collection.insert_one(self)
+
+			self._id = result.inserted_id
+            return self._id
+        else:
+            
+			
         pass #No olvidar eliminar esta linea una vez implementado
 
     def delete(self) -> None:
