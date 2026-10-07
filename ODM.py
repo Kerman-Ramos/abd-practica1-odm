@@ -105,6 +105,7 @@ class Model:
             kwargs : dict[str, str | dict]
                 diccionario con los valores de las atributos del modelo
         """
+        
         self._data: dict[str, str | dict | list] = {}
         #TODO
         # Realizar las comprabociones y gestiones necesarias
@@ -116,6 +117,20 @@ class Model:
         # almacenadas en la base de datos en una solo atributo
         # Encapsular los datos en una sola variable facilita la 
         # gestion en metodos como save.
+        self._modified_vars = set()
+
+        permitidas = self._required_vars | self._admissible_vars | {'_id'}
+        if self._location_var:
+            permitidas.add(self._location_var + '_loc')
+
+        faltan = self._required_vars - set(kwargs)
+        if faltan:
+            raise ValueError(f"Faltan atributos requeridos: {sorted(faltan)}")
+
+        sobran = set(kwargs) - permitidas
+        if sobran:
+            raise ValueError(f"Atributos no admitidos: {sorted(sobran)}")
+
         self._data.update(kwargs)
 
     def __setattr__(self, name: str, value: str | dict) -> None:
@@ -129,9 +144,18 @@ class Model:
         #TODO
         # Realizar las comprabociones y gestiones necesarias
         # antes de la asignacion.
+        
+        permitidas = self._required_vars | self._admissible_vars | {'_id'}
+        if self._location_var:
+            permitidas.add(self._location_var + '_loc')
+
+        if name not in permitidas:
+            raise ValueError(f"Atributo no admitido: {name}")
+
 
         # Asigna el valor value a la variable name
         self._data[name] = value
+        self._modified_vars.add(name)
 
     def __getattr__(self, name: str) -> Any:
         """ Sobreescribe el metodo de acceso a atributos del objeto
