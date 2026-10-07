@@ -22,6 +22,7 @@ Recinto:
   admissible_vars:
     - zonas
     - servicios
+    - direccion_loc
   unique_indexes:
     - nombre
   regular_indexes:
@@ -39,6 +40,7 @@ Artista:
     - nombre
   regular_indexes:
     - pais_origen
+  location_index:
 
 Evento:
   required_vars:
