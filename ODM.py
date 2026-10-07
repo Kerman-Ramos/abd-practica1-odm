@@ -112,12 +112,14 @@ class Model:
 		permitidas = self._required_vars | self._admissible_vars | {'_id'}
 		if self._location_var:
 			permitidas.add(self._location_var + '_loc')
-
-		faltan = self._required_vars - set(kwargs)
+		
+		kwargsSet = set(kwargs)
+		
+		faltan = self._required_vars - kwargsSet
 		if faltan:
 			raise ValueError(f"Faltan atributos requeridos: {sorted(faltan)}")
 
-		sobran = set(kwargs) - permitidas
+		sobran = kwargsSet - permitidas
 		if sobran:
 			raise ValueError(f"Atributos no admitidos: {sorted(sobran)}")
 
@@ -171,16 +173,18 @@ class Model:
 			self._id = result.inserted_id
 			return self._id
 		else:"""
-		
+
+		# TODO terminado
+
 		loc_var = self._location_var
 
 		if "_id" not in self._data:
 			# Si no existe
-			doc = dict(self.data)
+			doc = dict(self._data)
 			if loc_var and loc_var in doc:
 				doc[loc_var + "_loc"] = getLocationPoint(doc[loc_var])
-				self._db.inserto_one(doc)
-				self._data.update        
+				self._db.insert_one(doc)
+				self._data.update
 		else:
 			# Si existe
 			cambios = {campo: self._data[campo] for campo in self._modified_vars}
@@ -188,7 +192,7 @@ class Model:
 				punto = getLocationPoint(cambios[loc_var])
 				cambios[loc_var + "_loc"] = punto
 				self._data[loc_var + "_loc"] = punto
-			if cambios: 
+			if cambios:
 				self._db.update_one({"_id": self._data["_id"]}, {"$set": cambios})
 
 		self._modified_vars = set()
@@ -197,8 +201,11 @@ class Model:
 		"""
 		Elimina el modelo de la base de datos
 		"""
-		#TODO
-		pass
+		# TODO terminado
+
+		if "_id" in self._data:
+			self._db.delete_one({"_id": self._data["_id"]})
+			del self._data["_id"]
 	
 	@classmethod
 	def find(cls, filter: dict[str, str | dict]) -> Any:
@@ -216,9 +223,10 @@ class Model:
 			ModelCursor
 				cursor de modelos
 		""" 
-		#TODO
-		# cls es el puntero a la clase
-		pass #No olvidar eliminar esta linea una vez implementado
+		# TODO terminado
+		
+		cursor = cls._db.find(filter)
+		return ModelCursor(cls, cursor)
 
 	@classmethod
 	def aggregate(cls, pipeline: list[dict]) -> pymongo.command_cursor.CommandCursor:
@@ -280,12 +288,9 @@ class Model:
 		cls._db = db_collection
 		cls._required_vars = required_vars
 		cls._admissible_vars = admissible_vars
-		# TODO
-		# Recorrer indexes y crear cada índice segun su tipo: 'unique', 'asc'
-		# y 'geosphere'. Comparar el tipo por igualdad, no con el operador 'in'.
-		# Ojo con el índice geoespacial: save() guarda el GeoJSON Point en
-		# <campo>_loc, luego el índice 2dsphere va sobre <campo>_loc, mientras
-		# que _location_var debe guardar el nombre del campo base.
+		
+		# TODO terminado
+		
 		for campo, tipo in (indexes or {}).items():
 			if tipo == 'unique':
 				cls._db.create_index([(campo, pymongo.ASCENDING)], unique=True)
@@ -294,6 +299,7 @@ class Model:
 			elif tipo == 'geosphere':
 				cls._location_var = campo
 				cls._db.create_index([(campo + "_loc", pymongo.GEOSPHERE)])
+		
 
 class ModelCursor:
 	""" 
@@ -337,8 +343,14 @@ class ModelCursor:
 		Utilizar la funcion next para obtener el siguiente documento del cursor
 		Utilizar alive para comprobar si existen mas documentos.
 		"""
-		#TODO
-		pass #No olvidar eliminar esta linea una vez implementado
+		# TODO 
+
+		while self.cursor.alive:
+			try:
+				doc = next(self.cursor)
+			except StopIteration:
+				break
+			yield self.model(**doc)
 
 
 def initApp(definitions_path: str = "./models.yml", mongodb_uri="mongodb://localhost:27017/", db_name="abd", scope=globals()) -> None:
@@ -361,6 +373,7 @@ def initApp(definitions_path: str = "./models.yml", mongodb_uri="mongodb://local
 	#TODO
 	# Inicializar base de datos
 
+	
 	#TODO
 	# Declarar tantas clases modelo colecciones existan en la base de datos
 	# Leer el fichero de definiciones de modelos para obtener las colecciones,
