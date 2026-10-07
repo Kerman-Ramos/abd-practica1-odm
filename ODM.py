@@ -183,8 +183,9 @@ class Model:
 			doc = dict(self._data)
 			if loc_var and loc_var in doc:
 				doc[loc_var + "_loc"] = getLocationPoint(doc[loc_var])
-				self._db.insert_one(doc)
-				self._data.update
+
+			self._db.insert_one(doc)
+			self._data.update(doc)
 		else:
 			# Si existe
 			cambios = {campo: self._data[campo] for campo in self._modified_vars}
@@ -372,7 +373,31 @@ def initApp(definitions_path: str = "./models.yml", mongodb_uri="mongodb://local
 	"""
 	#TODO
 	# Inicializar base de datos
+	client = MongoClient(mongodb_uri, server_api=ServerApi('1'))
+	db = client[db_name]
 
+	# Leer el fichero de definiciones de modelos
+	with open(definitions_path, encoding="utf-8") as f:
+		definiciones = yaml.safe_load(f)
+
+	# Declarar una clase modelo por cada coleccion definida en el YAML
+	for nombre, definicion in definiciones.items():
+		indexes = {}
+		for campo in definicion.get("unique_indexes") or []:
+			indexes[campo] = "unique"
+		for campo in definicion.get("regular_indexes") or []:
+			indexes[campo] = "asc"
+		location = definicion.get("location_index")
+		if location:
+			indexes[location] = "geosphere"
+
+		scope[nombre] = type(nombre, (Model,), {})
+		scope[nombre].init_class(
+			db_collection=db[nombre],
+			indexes=indexes,
+			required_vars=set(definicion.get("required_vars") or []),
+			admissible_vars=set(definicion.get("admissible_vars") or []),
+		)
 
 	#TODO
 	# Declarar tantas clases modelo colecciones existan en la base de datos
@@ -392,30 +417,43 @@ if __name__ == '__main__':
 	#TODO
 	initApp()
 
-	#Ejemplo
-	m = MiModelo(nombre="Pablo", apellido="Ramos", edad=18)
-	m.save()
-	m.nombre="Pedro"
-	print(m.nombre)
+	# Limpiar documentos de ejecuciones anteriores (los indices se mantienen)
+	Recinto._db.delete_many({})
 
-	# Hacer pruebas para comprobar que funciona correctamente el modelo
-	#TODO
 	# Crear modelo
+	r = Recinto(nombre="WiZink Center", direccion="Av. Felipe II, Madrid", aforo=17000)
 
 	# Asignar nuevo valor a variable admitida del objeto 
+	r.zonas = {"pista": 8000, "grada": 9000}
 
 	# Asignar nuevo valor a variable no admitida del objeto 
+	try:
+		r.color = "rojo"
+	except ValueError as e:
+		print("Rechazado correctamente:", e)
 
 	# Guardar
+	r.save()
 
 	# Asignar nuevo valor a variable admitida del objeto
+	r.aforo = 17500
 
 	# Guardar
+	r.save()
 
 	# Buscar nuevo documento con find
+	cursor = Recinto.find({"nombre": "WiZink Center"})
 
 	# Obtener primer documento
+	primero = next(iter(cursor))
+	print(primero.nombre, primero.aforo)
 
 	# Modificar valor de variable admitida
-
+	primero.aforo = 18000
+	
 	# Guardar
+	primero.save()
+
+	print(Recinto._db.find_one({"nombre": "WiZink Center"}))
+
+	
