@@ -183,9 +183,27 @@ class Model:
 			self._id = result.inserted_id
             return self._id
         else:"""
-            
-			
-        pass #No olvidar eliminar esta linea una vez implementado
+        
+        loc_var = self._location_var
+
+        if "_id" not in self._data:
+            # Si no existe
+            doc = dict(self.data)
+            if loc_var and loc_var in doc:
+                doc[loc_var + "_loc"] = getLocationPoint(doc[loc_var])
+                self._db.inserto_one(doc)
+                self._data.update        
+        else:
+            # Si existe
+            cambios = {campo: self._data[campo] for campo in self._modified_vars}
+            if loc_var and loc_var in cambios:
+                punto = getLocationPoint(cambios[loc_var])
+                cambios[loc_var + "_loc"] = punto
+                self._data[loc_var + "_loc"] = punto
+            if cambios: 
+                self._db.update_one({"_id": self._data["_id"]}, {"$set": cambios})
+
+        self._modified_vars = set()
 
     def delete(self) -> None:
         """
