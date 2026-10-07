@@ -343,7 +343,7 @@ class ModelCursor:
 		Utilizar la funcion next para obtener el siguiente documento del cursor
 		Utilizar alive para comprobar si existen mas documentos.
 		"""
-		# TODO 
+		# TODO terminado
 
 		while self.cursor.alive:
 			try:
@@ -373,7 +373,7 @@ def initApp(definitions_path: str = "./models.yml", mongodb_uri="mongodb://local
 	#TODO
 	# Inicializar base de datos
 
-	
+
 	#TODO
 	# Declarar tantas clases modelo colecciones existan en la base de datos
 	# Leer el fichero de definiciones de modelos para obtener las colecciones,
