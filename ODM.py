@@ -107,16 +107,9 @@ class Model:
         """
         
         self._data: dict[str, str | dict | list] = {}
-        #TODO
-        # Realizar las comprabociones y gestiones necesarias
-        # antes de la asignacion.
 
-        # Asigna todos los valores en kwargs a las atributos con 
-        # nombre las claves en kwargs
-        # Utilizamos el atributo data para guardar los variables 
-        # almacenadas en la base de datos en una solo atributo
-        # Encapsular los datos en una sola variable facilita la 
-        # gestion en metodos como save.
+		# TODO terminado
+        
         self._modified_vars = set()
 
         permitidas = self._required_vars | self._admissible_vars | {'_id'}
@@ -141,9 +134,8 @@ class Model:
         if name in self._internal_vars:
             super().__setattr__(name, value)
             return
-        #TODO
-        # Realizar las comprabociones y gestiones necesarias
-        # antes de la asignacion.
+        
+        # TODO terminado
         
         permitidas = self._required_vars | self._admissible_vars | {'_id'}
         if self._location_var:
@@ -151,7 +143,6 @@ class Model:
 
         if name not in permitidas:
             raise ValueError(f"Atributo no admitido: {name}")
-
 
         # Asigna el valor value a la variable name
         self._data[name] = value
