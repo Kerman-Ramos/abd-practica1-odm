@@ -153,12 +153,12 @@ class Model:
         actualiza el documento existente con los nuevos valores del
         modelo.
         """
-        if self._id is None:
+        """if self._id is None:
             result = pymongo.collection.insert_one(self)
 
 			self._id = result.inserted_id
             return self._id
-        else:
+        else:"""
             
 			
         pass #No olvidar eliminar esta linea una vez implementado
@@ -256,7 +256,14 @@ class Model:
         # Ojo con el índice geoespacial: save() guarda el GeoJSON Point en
         # <campo>_loc, luego el índice 2dsphere va sobre <campo>_loc, mientras
         # que _location_var debe guardar el nombre del campo base.
-
+        for campo, tipo in (indexes or {}).items():
+            if tipo == 'unique':
+                cls._db.create_index([(campo, pymongo.ASCENDING)], unique=True)
+            elif tipo == 'asc':
+                cls._db.create_index([(campo, pymongo.ASCENDING)])
+            elif tipo == 'geosphere':
+                cls._location_var = campo
+                cls._db.create_index([(campo + "_loc", pymongo.GEOSPHERE)])
 
 class ModelCursor:
     """ 
