@@ -40,7 +40,8 @@ def getLocationPoint(address: str) -> Point:
 			# Puede lanzar una excepcion si se supera el tiempo de espera
 			# Volver a intentarlo
 			continue
-	#TODO terminado
+	
+	# TODO terminado
 	
 	if location is None:
 		raise ValueError(f"No se pudieron obtener coordenadas para: {address}")
