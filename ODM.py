@@ -28,6 +28,12 @@ def getLocationPoint(address: str) -> Point:
 		geojson.Point
 			coordenadas del punto de la direccion
 	"""
+	
+	# Traduce una dirección de texto a un punto matemático (Longitud, Latitud) usando una API.
+    # Incluye un sistema de reintentos con pausas (sleep) para evitar bloqueos de red.
+    # Lanza un error fatal si la conversión fracasa, garantizando que el sistema 
+    # nunca guarde coordenadas nulas o inventadas.
+	
 	location = None
 	intentos = 0
 	maxIntentos = 5
@@ -103,7 +109,12 @@ class Model:
 			kwargs : dict[str, str | dict]
 				diccionario con los valores de las atributos del modelo
 		"""
-		
+
+		# Actúa como la aduana de la memoria RAM al instanciar el objeto.
+        # Cruza los datos entrantes contra el esquema del YAML usando teoría de conjuntos.
+        # Bloquea la creación si falta un campo requerido o si intentan inyectar uno no admitido.
+        # Si todo es legal, encapsula la información en el diccionario interno _data.
+
 		self._data: dict[str, str | dict | list] = {}
 
 		# TODO terminado
@@ -131,6 +142,12 @@ class Model:
 		atributos del objeto con el fin de controlar que atributos 
 		son modificados y cuando son modificados.
 		"""
+
+		# Cortafuegos en tiempo de ejecución para controlar la mutación del objeto.
+        # Intercepta cualquier asignación (=) para verificar si la variable pertenece al esquema.
+        # Si es válida, la guarda en _data y registra su nombre en _modified_vars,
+        # creando un historial exacto para que el método 'save' solo envíe las diferencias por la red.
+
 		if name in self._internal_vars:
 			super().__setattr__(name, value)
 			return
@@ -153,6 +170,11 @@ class Model:
 		__getattr__ solo es llamado cuando no encuentra el atributo
 		en el objeto 
 		"""
+
+		# Redirige las peticiones de lectura del objeto hacia el diccionario interno _data.
+        # Si el motor de Python busca una variable estructural del sistema, 
+        # devuelve el control al comportamiento nativo para no romper la arquitectura.
+
 		if name in self._internal_vars:
 			return super().__getattribute__(name)
 		try:
@@ -174,6 +196,11 @@ class Model:
 			self._id = result.inserted_id
 			return self._id
 		else:"""
+
+		# Sincroniza el estado de la RAM con la base de datos física.
+        # Si es un documento nuevo, calcula sus coordenadas (si aplica), lo inserta completo 
+        # y recupera su _id. Si ya existe, lee el historial de mutaciones (_modified_vars)
+        # y envía exclusivamente un parche ($set) a la red, optimizando el ancho de banda.
 
 		# TODO terminado
 
@@ -203,6 +230,11 @@ class Model:
 		"""
 		Elimina el modelo de la base de datos
 		"""
+
+		# Destruye el documento físicamente en MongoDB utilizando su identificador único (_id).
+        # Tras el borrado, elimina el _id de la memoria RAM para que el objeto 
+        # vuelva a considerarse un "documento nuevo" si se intentara guardar de nuevo.
+
 		# TODO terminado
 
 		if "_id" in self._data:
@@ -225,6 +257,11 @@ class Model:
 			ModelCursor
 				cursor de modelos
 		""" 
+
+		# Ejecuta una consulta de lectura delegando el filtro al motor de MongoDB.
+        # Envuelve el resultado nativo dentro del iterador 'ModelCursor' 
+        # para transformarlo posteriormente en objetos puros de nuestra clase.
+		
 		# TODO terminado
 		
 		cursor = cls._db.find(filter)
@@ -247,6 +284,11 @@ class Model:
 			pymongo.command_cursor.CommandCursor
 				cursor de pymongo con el resultado de la consulta
 		""" 
+
+		# Canaliza las consultas analíticas complejas directamente hacia 
+        # el motor de agregación de MongoDB, devolviendo el resultado computado.
+
+
 		return cls._db.aggregate(pipeline)
 	
 	@classmethod
@@ -287,6 +329,11 @@ class Model:
 			admissible_vars : set[str] 
 				Set de atributos admitidos por el modelo
 		"""
+
+		# Configura el enlace físico entre la clase en Python y la colección en MongoDB.
+        # Transforma las reglas del YAML en órdenes directas para que el motor 
+        # construya los árboles de búsqueda (índices), aplicando el sufijo '_loc' a la geometría.
+
 		cls._db = db_collection
 		cls._required_vars = required_vars
 		cls._admissible_vars = admissible_vars
@@ -334,6 +381,10 @@ class ModelCursor:
 			cursor: pymongo.cursor.Cursor
 				Cursor de pymongo a iterar
 		"""
+
+		# Vincula el cursor crudo devuelto por MongoDB con la clase del modelo 
+        # correspondiente, preparando el entorno para la instanciación de los datos.
+
 		self.model = model_class
 		self.cursor = cursor
 	
@@ -345,6 +396,11 @@ class ModelCursor:
 		Utilizar la funcion next para obtener el siguiente documento del cursor
 		Utilizar alive para comprobar si existen mas documentos.
 		"""
+
+		# Consume los resultados de MongoDB bajo demanda para no colapsar la memoria RAM.
+        # Extrae un diccionario de la red, lo convierte en un objeto validado de nuestra clase,
+        # y pausa la ejecución (yield) hasta que el programa solicite el siguiente registro.
+
 		# TODO terminado
 
 		while self.cursor.alive:
@@ -372,7 +428,14 @@ def initApp(definitions_path: str = "./models.yml", mongodb_uri="mongodb://local
 		db_name : str
 			nombre de la base de datos
 	"""
-	#TODO
+
+	# Motor de arranque (Metaprogramación).
+    # Levanta la conexión a MongoDB, lee el mapa estructural del YAML y forja dinámicamente 
+    # las clases de negocio (Recinto, Evento, etc.) en tiempo de ejecución.
+    # Finalmente, inyecta las reglas en cada clase y dispara la creación de índices en el servidor.
+	
+	# TODO terminado
+
 	# Inicializar base de datos
 	client = MongoClient(mongodb_uri, server_api=ServerApi('1'))
 	db = client[db_name]
@@ -400,22 +463,19 @@ def initApp(definitions_path: str = "./models.yml", mongodb_uri="mongodb://local
 			admissible_vars=set(definicion.get("admissible_vars") or []),
 		)
 
-	#TODO
-	# Declarar tantas clases modelo colecciones existan en la base de datos
-	# Leer el fichero de definiciones de modelos para obtener las colecciones,
-	# indices y los atributos admitidos y requeridos para cada una de ellas.
-	# Ejemplo de declaracion de modelo para colecion llamada MiModelo
-	scope["MiModelo"] = type("MiModelo", (Model,),{})
-	# La clase se declara en tiempo de ejecucion y queda en scope, que no tiene
-	# por que ser el espacio de nombres global: las pruebas le pasan su propio
-	# diccionario. Por eso se inicializa a traves de scope y no por su nombre,
-	# que ahi todavia no existe.
-	scope["MiModelo"].init_class(db_collection=None, indexes=None, required_vars=None, admissible_vars=None)
+		# Ejemplo de declaracion de modelo para colecion llamada MiModelo
+#	scope["MiModelo"] = type("MiModelo", (Model,),{})
+		# La clase se declara en tiempo de ejecucion y queda en scope, que no tiene
+		# por que ser el espacio de nombres global: las pruebas le pasan su propio
+		# diccionario. Por eso se inicializa a traves de scope y no por su nombre,
+		# que ahi todavia no existe.
+#	scope["MiModelo"].init_class(db_collection=None, indexes=None, required_vars=None, admissible_vars=None)
 
 if __name__ == '__main__':
 	
 	# Inicializar base de datos y modelos con initApp
-	#TODO
+	# TODO terminado
+	
 	initApp()
 
 	# Limpiar documentos de ejecuciones anteriores (los indices se mantienen)
@@ -456,5 +516,3 @@ if __name__ == '__main__':
 	primero.save()
 
 	print(Recinto._db.find_one({"nombre": "WiZink Center"}))
-
-	
