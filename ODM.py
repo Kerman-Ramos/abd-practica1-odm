@@ -30,9 +30,9 @@ def getLocationPoint(address: str) -> Point:
 	"""
 	
 	# Traduce una dirección de texto a un punto matemático (Longitud, Latitud) usando una API.
-    # Incluye un sistema de reintentos con pausas (sleep) para evitar bloqueos de red.
-    # Lanza un error fatal si la conversión fracasa, garantizando que el sistema 
-    # nunca guarde coordenadas nulas o inventadas.
+	# Incluye un sistema de reintentos con pausas (sleep) para evitar bloqueos de red.
+	# Lanza un error fatal si la conversión fracasa, garantizando que el sistema 
+	# nunca guarde coordenadas nulas o inventadas.
 	
 	location = None
 	intentos = 0
@@ -111,9 +111,9 @@ class Model:
 		"""
 
 		# Actúa como la aduana de la memoria RAM al instanciar el objeto.
-        # Cruza los datos entrantes contra el esquema del YAML usando teoría de conjuntos.
-        # Bloquea la creación si falta un campo requerido o si intentan inyectar uno no admitido.
-        # Si todo es legal, encapsula la información en el diccionario interno _data.
+		# Cruza los datos entrantes contra el esquema del YAML usando teoría de conjuntos.
+		# Bloquea la creación si falta un campo requerido o si intentan inyectar uno no admitido.
+		# Si todo es legal, encapsula la información en el diccionario interno _data.
 
 		self._data: dict[str, str | dict | list] = {}
 
@@ -144,9 +144,9 @@ class Model:
 		"""
 
 		# Cortafuegos en tiempo de ejecución para controlar la mutación del objeto.
-        # Intercepta cualquier asignación (=) para verificar si la variable pertenece al esquema.
-        # Si es válida, la guarda en _data y registra su nombre en _modified_vars,
-        # creando un historial exacto para que el método 'save' solo envíe las diferencias por la red.
+		# Intercepta cualquier asignación (=) para verificar si la variable pertenece al esquema.
+		# Si es válida, la guarda en _data y registra su nombre en _modified_vars,
+		# creando un historial exacto para que el método 'save' solo envíe las diferencias por la red.
 
 		if name in self._internal_vars:
 			super().__setattr__(name, value)
@@ -172,8 +172,8 @@ class Model:
 		"""
 
 		# Redirige las peticiones de lectura del objeto hacia el diccionario interno _data.
-        # Si el motor de Python busca una variable estructural del sistema, 
-        # devuelve el control al comportamiento nativo para no romper la arquitectura.
+		# Si el motor de Python busca una variable estructural del sistema, 
+		# devuelve el control al comportamiento nativo para no romper la arquitectura.
 
 		if name in self._internal_vars:
 			return super().__getattribute__(name)
@@ -198,9 +198,9 @@ class Model:
 		else:"""
 
 		# Sincroniza el estado de la RAM con la base de datos física.
-        # Si es un documento nuevo, calcula sus coordenadas (si aplica), lo inserta completo 
-        # y recupera su _id. Si ya existe, lee el historial de mutaciones (_modified_vars)
-        # y envía exclusivamente un parche ($set) a la red, optimizando el ancho de banda.
+		# Si es un documento nuevo, calcula sus coordenadas (si aplica), lo inserta completo 
+		# y recupera su _id. Si ya existe, lee el historial de mutaciones (_modified_vars)
+		# y envía exclusivamente un parche ($set) a la red, optimizando el ancho de banda.
 
 		# TODO terminado
 
@@ -209,18 +209,23 @@ class Model:
 		if "_id" not in self._data:
 			# Si no existe
 			doc = dict(self._data)
+			
 			if loc_var and loc_var in doc:
 				doc[loc_var + "_loc"] = getLocationPoint(doc[loc_var])
 
+			# Inserta en Mongo (pymongo añade el "_id" a doc)
 			self._db.insert_one(doc)
+			# Sincroniza la memoria con lo guardado ("_id" y punto)
 			self._data.update(doc)
 		else:
 			# Si existe
 			cambios = {campo: self._data[campo] for campo in self._modified_vars}
+			
 			if loc_var and loc_var in cambios:
 				punto = getLocationPoint(cambios[loc_var])
 				cambios[loc_var + "_loc"] = punto
 				self._data[loc_var + "_loc"] = punto
+			
 			if cambios:
 				self._db.update_one({"_id": self._data["_id"]}, {"$set": cambios})
 
@@ -232,8 +237,8 @@ class Model:
 		"""
 
 		# Destruye el documento físicamente en MongoDB utilizando su identificador único (_id).
-        # Tras el borrado, elimina el _id de la memoria RAM para que el objeto 
-        # vuelva a considerarse un "documento nuevo" si se intentara guardar de nuevo.
+		# Tras el borrado, elimina el _id de la memoria RAM para que el objeto 
+		# vuelva a considerarse un "documento nuevo" si se intentara guardar de nuevo.
 
 		# TODO terminado
 
@@ -259,8 +264,8 @@ class Model:
 		""" 
 
 		# Ejecuta una consulta de lectura delegando el filtro al motor de MongoDB.
-        # Envuelve el resultado nativo dentro del iterador 'ModelCursor' 
-        # para transformarlo posteriormente en objetos puros de nuestra clase.
+		# Envuelve el resultado nativo dentro del iterador 'ModelCursor' 
+		# para transformarlo posteriormente en objetos puros de nuestra clase.
 		
 		# TODO terminado
 		
@@ -286,8 +291,7 @@ class Model:
 		""" 
 
 		# Canaliza las consultas analíticas complejas directamente hacia 
-        # el motor de agregación de MongoDB, devolviendo el resultado computado.
-
+		# el motor de agregación de MongoDB, devolviendo el resultado computado.
 
 		return cls._db.aggregate(pipeline)
 	
@@ -331,8 +335,8 @@ class Model:
 		"""
 
 		# Configura el enlace físico entre la clase en Python y la colección en MongoDB.
-        # Transforma las reglas del YAML en órdenes directas para que el motor 
-        # construya los árboles de búsqueda (índices), aplicando el sufijo '_loc' a la geometría.
+		# Transforma las reglas del YAML en órdenes directas para que el motor 
+		# construya los árboles de búsqueda (índices), aplicando el sufijo '_loc' a la geometría.
 
 		cls._db = db_collection
 		cls._required_vars = required_vars
@@ -383,7 +387,7 @@ class ModelCursor:
 		"""
 
 		# Vincula el cursor crudo devuelto por MongoDB con la clase del modelo 
-        # correspondiente, preparando el entorno para la instanciación de los datos.
+		# correspondiente, preparando el entorno para la instanciación de los datos.
 
 		self.model = model_class
 		self.cursor = cursor
@@ -398,8 +402,8 @@ class ModelCursor:
 		"""
 
 		# Consume los resultados de MongoDB bajo demanda para no colapsar la memoria RAM.
-        # Extrae un diccionario de la red, lo convierte en un objeto validado de nuestra clase,
-        # y pausa la ejecución (yield) hasta que el programa solicite el siguiente registro.
+		# Extrae un diccionario de la red, lo convierte en un objeto validado de nuestra clase,
+		# y pausa la ejecución (yield) hasta que el programa solicite el siguiente registro.
 
 		# TODO terminado
 
@@ -430,9 +434,9 @@ def initApp(definitions_path: str = "./models.yml", mongodb_uri="mongodb://local
 	"""
 
 	# Motor de arranque (Metaprogramación).
-    # Levanta la conexión a MongoDB, lee el mapa estructural del YAML y forja dinámicamente 
-    # las clases de negocio (Recinto, Evento, etc.) en tiempo de ejecución.
-    # Finalmente, inyecta las reglas en cada clase y dispara la creación de índices en el servidor.
+	# Levanta la conexión a MongoDB, lee el mapa estructural del YAML y forja dinámicamente 
+	# las clases de negocio (Recinto, Evento, etc.) en tiempo de ejecución.
+	# Finalmente, inyecta las reglas en cada clase y dispara la creación de índices en el servidor.
 	
 	# TODO terminado
 
