@@ -1,0 +1,34 @@
+[
+    {
+        "_id": {
+            "$oid": "6ac8eb0387da024071991e72"
+        },
+        "titulo": "Tributo Electrónico: Wake Me Up",
+        "artistas": [
+            "Avicii"
+        ],
+        "recinto": "WiZink Center",
+        "fecha": "2026-11-20T21:00:00Z",
+        "precios_zona": {
+            "pista": 60,
+            "grada": 45
+        },
+        "entradas_vendidas": 15000
+    },
+    {
+        "_id": {
+            "$oid": "6ac8eb0387da024071991e73"
+        },
+        "titulo": "El Madrileño Live",
+        "artistas": [
+            "C. Tangana"
+        ],
+        "recinto": "WiZink Center",
+        "fecha": "2026-12-05T20:30:00Z",
+        "precios_zona": {
+            "pista": 80,
+            "grada": 65
+        },
+        "entradas_vendidas": 17000
+    }
+]

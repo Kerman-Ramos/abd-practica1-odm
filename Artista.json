@@ -1,0 +1,27 @@
+[
+    {
+        "_id": {
+            "$oid": "6ac8eb0287da024071991e6f"
+        },
+        "nombre": "Avicii",
+        "generos": [
+            "Electrónica",
+            "Dance"
+        ],
+        "pais_origen": "Suecia",
+        "anio_inicio": 2006
+    },
+    {
+        "_id": {
+            "$oid": "6ac8eb0287da024071991e70"
+        },
+        "nombre": "C. Tangana",
+        "generos": [
+            "Urbano",
+            "Pop",
+            "Flamenco"
+        ],
+        "pais_origen": "España",
+        "anio_inicio": 2006
+    }
+]

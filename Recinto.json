@@ -1,0 +1,21 @@
+[
+    {
+        "_id": {
+            "$oid": "6ac8eb0287da024071991e6e"
+        },
+        "nombre": "WiZink Center",
+        "direccion": "Av. Felipe II, Madrid",
+        "aforo": 17000,
+        "zonas": {
+            "pista": 8000,
+            "grada": 9000
+        },
+        "direccion_loc": {
+            "type": "Point",
+            "coordinates": [
+                -3.67616,
+                40.424171
+            ]
+        }
+    }
+]

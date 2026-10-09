@@ -523,7 +523,7 @@ if __name__ == '__main__':
 
 
 	# Para crear los JSON poner True
-	if True:
+	if False:
 		# MOTOR DE EXTRACCIÓN (VOLCADO JSON)
 		from bson import json_util
 		print("\n--- INICIANDO EXTRACCIÓN Y VOLCADO JSON ---")
