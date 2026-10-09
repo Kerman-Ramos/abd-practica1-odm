@@ -523,7 +523,7 @@ if __name__ == '__main__':
 
 
 	# Para crear los JSON poner True
-	if False:
+	if True:
 		# MOTOR DE EXTRACCIÓN (VOLCADO JSON)
 		from bson import json_util
 		print("\n--- INICIANDO EXTRACCIÓN Y VOLCADO JSON ---")
@@ -607,7 +607,7 @@ if __name__ == '__main__':
 		colecciones = [Recinto, Artista, Evento, Asistente]
 
 		for modelo in colecciones:
-			nombre_archivo = f"{modelo.__name__.lower()}.json"
+			nombre_archivo = f"{modelo.__name__}.json"
 			
 			# Conectamos directamente a la capa física (_db) para extraer la estructura cruda
 			documentos_crudos = list(modelo._db.find({}))
