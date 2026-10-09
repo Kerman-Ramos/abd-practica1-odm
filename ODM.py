@@ -520,3 +520,106 @@ if __name__ == '__main__':
 	primero.save()
 
 	print(Recinto._db.find_one({"nombre": "WiZink Center"}))
+
+
+	# Para crear los JSON poner True
+	if False:
+		# MOTOR DE EXTRACCIÓN (VOLCADO JSON)
+		from bson import json_util
+		print("\n--- INICIANDO EXTRACCIÓN Y VOLCADO JSON ---")
+		
+		# Crear una base de datos con informacion de ejemplo para exportar a JSON
+		Recinto._db.delete_many({})
+		Artista._db.delete_many({})
+		Evento._db.delete_many({})
+		Asistente._db.delete_many({})
+
+		print("--- INICIANDO POBLACIÓN DE LA BASE DE DATOS ---")
+
+		# 3. CREACIÓN DE NODOS INDEPENDIENTES
+		# Recinto (Lanzará una petición a la API para traducir la dirección)
+		r = Recinto(
+			nombre="WiZink Center", 
+			direccion="Av. Felipe II, Madrid", 
+			aforo=17000,
+			zonas={"pista": 8000, "grada": 9000}
+		)
+		r.save()
+		print("Recinto guardado con éxito.")
+
+		# Artistas (Sin coordenadas, para probar que el if de la función save es seguro)
+		a1 = Artista(
+			nombre="Avicii", 
+			generos=["Electrónica", "Dance"], 
+			pais_origen="Suecia", 
+			anio_inicio=2006
+		)
+		a1.save()
+
+		a2 = Artista(
+			nombre="C. Tangana", 
+			generos=["Urbano", "Pop", "Flamenco"], 
+			pais_origen="España", 
+			anio_inicio=2006
+		)
+		a2.save()
+		print("Artistas guardados con éxito.")
+
+		# Asistente (Lanzará petición a la API. Usamos una dirección real y verificable)
+		usr = Asistente(
+			nombre="Estudiante Analítico",
+			email="estudiante.utad@example.com",
+			fecha_alta="2026-09-22",
+			direccion="Calle de Alcalá 1, Madrid", 
+			generos_preferidos=["Electrónica", "Urbano"]
+		)
+		usr.save()
+		print("Asistente guardado con éxito.")
+
+		# 4. CREACIÓN DEL NODO RELACIONAL
+		# El Evento une el ecosistema. Su integridad depende de que los nombres coincidan 
+		# lógicamente con los registros anteriores.
+		e1 = Evento(
+			titulo="Tributo Electrónico: Wake Me Up",
+			artistas=["Avicii"],
+			recinto="WiZink Center",
+			fecha="2026-11-20T21:00:00Z",
+			precios_zona={"pista": 60, "grada": 45},
+			entradas_vendidas=15000
+		)
+		e1.save()
+
+		e2 = Evento(
+			titulo="El Madrileño Live",
+			artistas=["C. Tangana"],
+			recinto="WiZink Center",
+			fecha="2026-12-05T20:30:00Z",
+			precios_zona={"pista": 80, "grada": 65},
+			entradas_vendidas=17000
+		)
+		e2.save()
+		print("Eventos guardados con éxito.")
+
+		# 5. MOTOR DE EXTRACCIÓN (VOLCADO JSON)
+		print("\n--- INICIANDO EXTRACCIÓN Y VOLCADO JSON ---")
+		
+		# Agrupamos los moldes de las entidades que queremos exportar al disco.
+		colecciones = [Recinto, Artista, Evento, Asistente]
+
+		for modelo in colecciones:
+			nombre_archivo = f"{modelo.__name__.lower()}.json"
+			
+			# Conectamos directamente a la capa física (_db) para extraer la estructura cruda
+			documentos_crudos = list(modelo._db.find({}))
+			
+			# Abrimos el túnel de escritura y forzamos el formato utf-8 (vital en español)
+			with open(nombre_archivo, "w", encoding="utf-8") as archivo_salida:
+				
+				# El serializador json_util interviene para traducir objetos matemáticos
+				# (como el ObjectId de MongoDB o las coordenadas) a texto plano JSON.
+				texto_json = json_util.dumps(documentos_crudos, ensure_ascii=False, indent=4)
+				archivo_salida.write(texto_json)
+				
+			print(f"Volcado físico generado: {nombre_archivo} ({len(documentos_crudos)} registros)")
+
+		print("\nPROCESO ARQUITECTÓNICO FINALIZADO CORRECTAMENTE.")

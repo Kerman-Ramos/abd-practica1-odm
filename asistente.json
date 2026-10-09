@@ -1,0 +1,22 @@
+[
+    {
+        "_id": {
+            "$oid": "6ac8e36e7a8f3cc2a3b01a6d"
+        },
+        "nombre": "Estudiante Analítico",
+        "email": "estudiante.utad@example.com",
+        "fecha_alta": "2026-09-22",
+        "direccion": "Calle de Alcalá 1, Madrid",
+        "generos_preferidos": [
+            "Electrónica",
+            "Urbano"
+        ],
+        "direccion_loc": {
+            "type": "Point",
+            "coordinates": [
+                -3.702211,
+                40.417211
+            ]
+        }
+    }
+]
